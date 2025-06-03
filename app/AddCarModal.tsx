@@ -64,7 +64,7 @@ export default function AddCarModal() {
         }
 
         try {
-            CarStorage.saveCar(db, carData);
+            await CarStorage.saveCarSync(db, carData);
             if (isEditing && carId) {
                 Alert.alert('Success', 'Car updated!');
             } else {

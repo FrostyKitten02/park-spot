@@ -29,6 +29,10 @@ export class CarStorage {
         return cars;
     }
 
+    public static async saveCarSync(db: SQLiteDatabase, car: Car): Promise<void> {
+        return CarStorage.saveCar(db, car);
+    }
+
     public static saveCar(db: SQLiteDatabase, car: Car) {
         if (car.id) {
             // Update existing car
