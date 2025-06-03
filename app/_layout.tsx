@@ -3,10 +3,11 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import {runMigrations} from "@/storage/migrate";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -35,7 +36,11 @@ export default function RootLayout() {
   useEffect(() => {
     async function hideSplashAfterDelay() {
       if (loaded) {
-        // Wait 3 seconds before hiding splash screen
+        try {
+          runMigrations();
+        } catch (err) {
+          console.error(err);
+        }
         await new Promise(resolve => setTimeout(resolve, 250));
         await SplashScreen.hideAsync();
       }
