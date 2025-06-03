@@ -1,7 +1,9 @@
-import {useEffect, useLayoutEffect, useState} from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { PixelRatio } from 'react-native';
 import {
     ActivityIndicator,
     Alert,
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
     Pressable,
@@ -11,11 +13,11 @@ import {
     View,
 } from 'react-native';
 import StyledTextInput from '@/components/StyledTextInput';
-import {accentColor, primaryColor} from "@/constants/Colors";
-import {CarStorage} from "@/storage/CarStorage";
-import {useSQLiteContext} from "expo-sqlite";
-import {useLocalSearchParams, useNavigation} from "expo-router";
-import {Car} from "@/model/Models";
+import { accentColor, primaryColor } from '@/constants/Colors';
+import { CarStorage } from '@/storage/CarStorage';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { Car } from '@/model/Models';
 
 export default function AddCarModal() {
     const db = useSQLiteContext();
@@ -26,7 +28,10 @@ export default function AddCarModal() {
     const [registrationPlate, setRegistrationPlate] = useState('');
     const [color, setColor] = useState('');
     const [isEditing, setIsEditing] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);  // <-- loading state
+    const [isLoading, setIsLoading] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    const isIOS = Platform.OS === 'ios';
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -39,9 +44,9 @@ export default function AddCarModal() {
             setIsEditing(true);
             CarStorage.getCarByIdAsync(db, parseInt(carId)).then((car) => {
                 if (car) {
-                    setName(car.name ?? "");
-                    setRegistrationPlate(car.registrationPlateNumber ?? "");
-                    setColor(car.color ?? "");
+                    setName(car.name ?? '');
+                    setRegistrationPlate(car.registrationPlateNumber ?? '');
+                    setColor(car.color ?? '');
                 } else {
                     Alert.alert('Error', 'Car not found.');
                     navigation.goBack();
@@ -49,6 +54,21 @@ export default function AddCarModal() {
             });
         }
     }, [carId]);
+
+    useEffect(() => {
+        const showSubscription = Keyboard.addListener('keyboardDidShow', (e) => {
+            const actualHeight = e.endCoordinates.height / PixelRatio.get()
+            setKeyboardHeight(actualHeight + 16);
+        });
+        const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            showSubscription.remove();
+            hideSubscription.remove();
+        };
+    }, []);
 
     const handleSubmit = async () => {
         if (!name || !registrationPlate || !color) {
@@ -83,34 +103,39 @@ export default function AddCarModal() {
     return (
         <KeyboardAvoidingView
             style={{ flex: 1, backgroundColor: primaryColor }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={isIOS ? 'padding' : undefined}
         >
-            <ScrollView contentContainerStyle={styles.container}>
-                <StyledTextInput
-                    label="Car name"
-                    placeholder="Enter car name"
-                    value={name}
-                    onChangeText={setName}
-                    editable={!isLoading}
-                />
+            <View style={{ flex: 1 }}>
+                <ScrollView
+                    contentContainerStyle={styles.container}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <StyledTextInput
+                        label="Car name"
+                        placeholder="Enter car name"
+                        value={name}
+                        onChangeText={setName}
+                        editable={!isLoading}
+                    />
 
-                <StyledTextInput
-                    label="Registration Plate"
-                    placeholder="Enter plate number"
-                    value={registrationPlate}
-                    onChangeText={setRegistrationPlate}
-                    editable={!isLoading}
-                />
+                    <StyledTextInput
+                        label="Registration Plate"
+                        placeholder="Enter plate number"
+                        value={registrationPlate}
+                        onChangeText={setRegistrationPlate}
+                        editable={!isLoading}
+                    />
 
-                <StyledTextInput
-                    label="Color"
-                    placeholder="Enter car color"
-                    value={color}
-                    onChangeText={setColor}
-                    editable={!isLoading}
-                />
+                    <StyledTextInput
+                        label="Color"
+                        placeholder="Enter car color"
+                        value={color}
+                        onChangeText={setColor}
+                        editable={!isLoading}
+                    />
+                </ScrollView>
 
-                <View style={styles.buttonContainer}>
+                <View style={[styles.buttonContainer, { marginBottom: keyboardHeight}]}>
                     <Pressable
                         onPress={handleSubmit}
                         disabled={isLoading}
@@ -126,12 +151,12 @@ export default function AddCarModal() {
                             <ActivityIndicator size="small" color={primaryColor} />
                         ) : (
                             <Text style={styles.buttonText}>
-                                {isEditing ? "Update Car" : "Add Car"}
+                                {isEditing ? 'Update Car' : 'Add Car'}
                             </Text>
                         )}
                     </Pressable>
                 </View>
-            </ScrollView>
+            </View>
         </KeyboardAvoidingView>
     );
 }
@@ -139,13 +164,17 @@ export default function AddCarModal() {
 const styles = StyleSheet.create({
     container: {
         padding: 16,
+        paddingBottom: 16,
         backgroundColor: primaryColor,
         flexGrow: 1,
     },
     buttonContainer: {
-        marginTop: 8,
-        borderRadius: 8,
-        overflow: 'hidden',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 24,
+        backgroundColor: primaryColor,
     },
     buttonPressable: {
         paddingVertical: 12,
