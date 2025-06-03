@@ -19,13 +19,13 @@ export class CarStorage {
         if (car.id) {
             // Update existing car
             db.execSync(
-                `UPDATE car SET name = ${car.name}, registration_plate_number = ${car.registrationPlateNumber}, color = ${car.color} WHERE id = ${car.id};`
+                `UPDATE car SET name = ${car.name}, registrationPlateNumber = ${car.registrationPlateNumber}, color = ${car.color} WHERE id = ${car.id};`
             )
             return car
         }
 
         const statement = db.prepareSync(
-            `INSERT INTO car (name, registration_plate_number, color) VALUES ($name, $plate, $color) RETURNING *;`
+            `INSERT INTO car (name, registrationPlateNumber, color) VALUES ($name, $plate, $color) RETURNING *;`
         );
 
         const result = statement.executeSync<Car>({

@@ -6,7 +6,7 @@ const m1: Migration = {
     sql: "CREATE TABLE car(" +
         "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
         "name TEXT, " +
-        "registration_plate_number TEXT, " +
+        "registrationPlateNumber TEXT, " +
         "color TEXT" +
         ");"
 }
