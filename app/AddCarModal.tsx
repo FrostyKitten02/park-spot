@@ -1,22 +1,21 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import {useEffect, useLayoutEffect, useState} from 'react';
 import {
+    ActivityIndicator,
     Alert,
-    Button,
     KeyboardAvoidingView,
     Platform,
+    Pressable,
     ScrollView,
     StyleSheet,
-    View,
-    ActivityIndicator,
-    Pressable,
     Text,
+    View,
 } from 'react-native';
 import StyledTextInput from '@/components/StyledTextInput';
-import { accentColor, primaryColor, textSecondaryColor } from "@/constants/Colors";
-import { CarStorage } from "@/storage/CarStorage";
-import { useSQLiteContext } from "expo-sqlite";
-import { useNavigation, useLocalSearchParams } from "expo-router";
-import { Car } from "@/model/Models";
+import {accentColor, primaryColor} from "@/constants/Colors";
+import {CarStorage} from "@/storage/CarStorage";
+import {useSQLiteContext} from "expo-sqlite";
+import {useLocalSearchParams, useNavigation} from "expo-router";
+import {Car} from "@/model/Models";
 
 export default function AddCarModal() {
     const db = useSQLiteContext();
