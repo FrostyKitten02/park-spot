@@ -18,6 +18,7 @@ export default function ParkingCard(props: {
 
     return (
         <Card
+            onPress={() => {}}
             marginVertical={props.marginVertical}
             title={props.parked?.car?.name??""}
             secondaryText={getDateTimeStr()}
