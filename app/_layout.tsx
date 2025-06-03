@@ -10,6 +10,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import {runMigrations} from "@/storage/migrate";
 import db from "@/storage/database";
 import {SQLiteProvider} from "expo-sqlite";
+import AddCarModal from "@/app/AddCarModal";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -74,7 +75,13 @@ function RootLayoutNav() {
       <SQLiteProvider databaseName={"park-spot3"} onInit={async (db) => runMigrations(db)}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen
+              name="AddCarModal"
+              options={{
+                title: 'Add a New Car',
+                presentation: 'modal'
+              }}
+          />
         </Stack>
       </SQLiteProvider>
     </ThemeProvider>
