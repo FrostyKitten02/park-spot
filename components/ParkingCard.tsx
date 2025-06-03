@@ -4,6 +4,7 @@ import {Car, Parked} from "@/model/Models";
 
 export default function ParkingCard(props: {
     parked: Parked
+    marginVertical: number
 }) {
 
     function getDateTimeStr() {
@@ -17,6 +18,7 @@ export default function ParkingCard(props: {
 
     return (
         <Card
+            marginVertical={props.marginVertical}
             title={props.parked?.car?.name??""}
             secondaryText={getDateTimeStr()}
         />

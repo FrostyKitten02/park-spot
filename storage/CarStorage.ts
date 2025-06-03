@@ -5,6 +5,11 @@ import {SQLiteDatabase} from "expo-sqlite";
 export class CarStorage {
     private constructor() {}
 
+
+    public static async getCarsAsync(db: SQLiteDatabase): Promise<Car[]> {
+        return CarStorage.getCars(db);
+    }
+
     public static getCars(db: SQLiteDatabase): Car[] {
         const cars: Car[] = db.getAllSync("SELECT * FROM car")
         return cars;

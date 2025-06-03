@@ -10,9 +10,11 @@ export default function Card(
     {
         title,
         secondaryText,
+        marginVertical,
     }:{
         title: string;
         secondaryText: string;
+        marginVertical: number;
     }
 ) {
 
@@ -20,6 +22,7 @@ export default function Card(
         <View
             style={{
                 backgroundColor: primaryColor,
+                marginVertical: marginVertical,
                 paddingVertical: 8,
                 paddingHorizontal: 16,
                 borderRadius: 8,
