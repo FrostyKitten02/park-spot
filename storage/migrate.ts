@@ -1,9 +1,9 @@
-import db from './database';
 import {migrations} from '@/storage/migrations';
+import {SQLiteDatabase} from "expo-sqlite";
 
 const MIGRATIONS_TABLE = '__migrations';
 
-export const runMigrations = () => {
+export const runMigrations = (db: SQLiteDatabase) => {
     db.execSync(`CREATE TABLE IF NOT EXISTS ${MIGRATIONS_TABLE}
                  (
                      id

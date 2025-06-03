@@ -8,6 +8,8 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import {runMigrations} from "@/storage/migrate";
+import db from "@/storage/database";
+import {SQLiteProvider} from "expo-sqlite";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -36,11 +38,12 @@ export default function RootLayout() {
   useEffect(() => {
     async function hideSplashAfterDelay() {
       if (loaded) {
-        try {
-          runMigrations();
-        } catch (err) {
-          console.error(err);
-        }
+        // try {
+        //   db.closeSync()
+        //   runMigrations();
+        // } catch (err) {
+        //   console.error(err);
+        // }
         await new Promise(resolve => setTimeout(resolve, 250));
         await SplashScreen.hideAsync();
       }
@@ -48,6 +51,13 @@ export default function RootLayout() {
 
     hideSplashAfterDelay();
   }, [loaded]);
+
+
+  // useEffect(() => {
+  //   return () => {
+  //     db.closeSync()
+  //   };
+  // }, []);
 
   if (!loaded) {
     return null;
@@ -61,10 +71,12 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <SQLiteProvider databaseName={"park-spot"} onInit={async (db) => runMigrations(db)}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </SQLiteProvider>
     </ThemeProvider>
   );
 }
