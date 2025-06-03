@@ -14,6 +14,15 @@ export interface Parked {
     note?: string,
 }
 
+export interface SimpleParked {
+    id?: number,
+    carId?: number,
+    start?: Date,
+    finish?: Date,
+    locationId?: number,
+    note?: string,
+}
+
 export interface Location {
     id?: number,
     longitude?: string,

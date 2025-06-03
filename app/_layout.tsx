@@ -82,6 +82,13 @@ function RootLayoutNav() {
                 presentation: 'modal'
               }}
           />
+          <Stack.Screen
+              name="AddParkedModal"
+              options={{
+                title: 'Add Parking',
+                presentation: 'modal'
+              }}
+          />
         </Stack>
       </SQLiteProvider>
     </ThemeProvider>
