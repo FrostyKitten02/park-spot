@@ -1,10 +1,15 @@
-import {TextInput, TextInputProps, View} from "react-native";
+import {Text, TextInput, TextInputProps, View} from "react-native";
 import {accentColor, accentColor2, primaryColor, textSecondaryColor} from "@/constants/Colors";
 import { StyleSheet } from 'react-native';
 
-export default function StyledTextInput(props: TextInputProps) {
+interface StyledTextInputProps extends TextInputProps {
+    label?: string;
+}
+
+export default function StyledTextInput({ label, ...props }: StyledTextInputProps) {
     return (
         <View style={styles.container}>
+            {label && <Text style={styles.label}>{label}</Text>}
             <TextInput
                 placeholder="Enter text..."
                 placeholderTextColor={textSecondaryColor}
@@ -17,18 +22,19 @@ export default function StyledTextInput(props: TextInputProps) {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 8,
-        backgroundColor: primaryColor,
-        flex: 1,
-        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    label: {
+        color: textSecondaryColor,
+        fontSize: 14,
+        marginBottom: 4,
     },
     input: {
-        backgroundColor: accentColor2,
-        color: primaryColor,
-        borderColor: accentColor,
-        borderWidth: 2,
+        borderWidth: 1,
+        borderColor: textSecondaryColor,
         borderRadius: 8,
-        padding: 12,
-        fontSize: 16,
+        padding: 10,
+        color: textSecondaryColor,
+        backgroundColor: primaryColor,
     },
 });
