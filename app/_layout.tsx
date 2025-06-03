@@ -33,9 +33,15 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    async function hideSplashAfterDelay() {
+      if (loaded) {
+        // Wait 3 seconds before hiding splash screen
+        await new Promise(resolve => setTimeout(resolve, 250));
+        await SplashScreen.hideAsync();
+      }
     }
+
+    hideSplashAfterDelay();
   }, [loaded]);
 
   if (!loaded) {
