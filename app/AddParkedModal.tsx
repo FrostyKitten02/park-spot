@@ -1,4 +1,4 @@
-import {useEffect, useLayoutEffect, useState} from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -11,16 +11,17 @@ import {
     View
 } from 'react-native';
 import StyledTextInput from '@/components/StyledTextInput';
-import {useNavigation} from 'expo-router';
-import {useSQLiteContext} from 'expo-sqlite';
+import { useNavigation } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
 
-import {accentColor, primaryColor} from '@/constants/Colors';
-import {CarStorage} from '@/storage/CarStorage';
-import {Car, Location as Loc, LocationDb, Parked, ParkedDb} from '@/model/Models';
+import { accentColor, primaryColor } from '@/constants/Colors';
+import { CarStorage } from '@/storage/CarStorage';
+import { Car, LocationDb, ParkedDb } from '@/model/Models';
 import StyledPicker from "@/components/StyledPicker";
-import {LocationStorage} from "@/storage/LocationStorage";
-import {ParkedStorage} from "@/storage/ParkedStorage";
+import { LocationStorage } from "@/storage/LocationStorage";
+import { ParkedStorage } from "@/storage/ParkedStorage";
 import * as Location from 'expo-location';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
 export default function AddParkedModal() {
     const db = useSQLiteContext();
@@ -29,13 +30,15 @@ export default function AddParkedModal() {
     const [cars, setCars] = useState<Car[]>([]);
     const [selectedCarId, setSelectedCarId] = useState<number | undefined>();
     const [locationString, setLocationString] = useState('');
-    const [start, setStart] = useState('');
-    const [finish, setFinish] = useState('');
+    const [start, setStart] = useState<Date | undefined>(new Date());
+    const [finish, setFinish] = useState<Date | undefined>();
     const [note, setNote] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showStartPicker, setShowStartPicker] = useState(false);
+    const [showFinishPicker, setShowFinishPicker] = useState(false);
 
     useLayoutEffect(() => {
-        navigation.setOptions({title: 'Add Parked Entry'});
+        navigation.setOptions({ title: 'Add Parked Entry' });
     }, []);
 
     useEffect(() => {
@@ -44,7 +47,7 @@ export default function AddParkedModal() {
     }, []);
 
     const fetchLocation = async () => {
-        const {status} = await Location.requestForegroundPermissionsAsync();
+        const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             Alert.alert('Permission denied', 'Location permission is required.');
             return;
@@ -55,30 +58,81 @@ export default function AddParkedModal() {
         setLocationString(coords);
     };
 
+    const formatDateTime = (date?: Date) => {
+        if (!date) {
+            return '';
+        }
+
+        return date.toLocaleString();
+    };
+
+    const showDateTimePickerAndroid = (
+        initialDate: Date,
+        onConfirm: (date: Date) => void
+    ) => {
+        DateTimePickerAndroid.open({
+            value: initialDate,
+            mode: 'date',
+            onChange: (eventDate, selectedDate) => {
+                if (eventDate.type == 'set' && selectedDate) {
+                    DateTimePickerAndroid.open({
+                        value: selectedDate,
+                        mode: 'time',
+                        is24Hour: true,
+                        onChange: (eventTime, selectedTime) => {
+                            if (eventTime.type === 'set' && selectedTime) {
+                                const combined = new Date(
+                                    selectedDate.getFullYear(),
+                                    selectedDate.getMonth(),
+                                    selectedDate.getDate(),
+                                    selectedTime.getHours(),
+                                    selectedTime.getMinutes()
+                                );
+                                onConfirm(combined);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    };
+
+    const handleStartPress = () => {
+        const current = !!start ? new Date(start) : new Date();
+        if (Platform.OS === 'android') {
+            showDateTimePickerAndroid(current, (date) => {
+                setStart(date);
+            });
+        } else {
+            setShowStartPicker(true);
+        }
+    };
+
+    const handleFinishPress = () => {
+        const current = !!finish ? new Date(finish) : new Date();
+        if (Platform.OS === 'android') {
+            showDateTimePickerAndroid(current, (date) => {
+                setFinish(date);
+            });
+        } else {
+            setShowFinishPicker(true);
+        }
+    };
+
     const handleSubmit = async () => {
-        // if (!selectedCarId || !locationString) {
-        //     Alert.alert('Missing Info', 'Car and location are required.');
-        //     return;
-        // }
-
         setIsLoading(true);
-
         try {
             const [lat, lon] = locationString.split(',');
-
-            //TODO check saving location successfull then procceed to save parked
             const location: LocationDb = { latitude: lat, longitude: lon };
-            const locationId = LocationStorage.saveLocation(db, location);
+            const locationId = await LocationStorage.saveLocation(db, location);
 
             const parked: ParkedDb = {
                 carId: selectedCarId,
-                // start,
-                // finish,
+                start: start,
+                finish: finish,
                 note: note,
                 locationId: locationId,
             };
-
-            console.log(parked);
 
             await ParkedStorage.saveParkedAsync(db, parked);
 
@@ -93,36 +147,38 @@ export default function AddParkedModal() {
     };
 
     return (
-        <KeyboardAvoidingView style={{flex: 1, backgroundColor: primaryColor}}
-                              behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-            <View style={{flex: 1}}>
+        <KeyboardAvoidingView
+            style={{ flex: 1, backgroundColor: primaryColor }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+            <View style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
                     <StyledPicker
                         label="Select Car"
                         selectedValue={selectedCarId}
-                        onValueChange={(val) => setSelectedCarId(val)}
+                        onValueChange={setSelectedCarId}
                         enabled={!isLoading}
                         options={[
                             { label: 'Choose a car...', value: undefined },
-                            ...cars.map((car) => ({ label: car.name??"", value: car.id })),
+                            ...cars.map((car) => ({ label: car.name ?? "", value: car.id })),
                         ]}
                     />
 
-                    <StyledTextInput
-                        label="Start Time"
-                        placeholder="e.g., 2024-06-03T14:00"
-                        value={start}
-                        onChangeText={setStart}
-                        editable={!isLoading}
-                    />
+                    <Pressable onPress={handleStartPress}>
+                        <StyledTextInput
+                            label="Start Time"
+                            value={formatDateTime(start)}
+                            editable={false}
+                        />
+                    </Pressable>
 
-                    <StyledTextInput
-                        label="Finish Time"
-                        placeholder="e.g., 2024-06-03T16:00"
-                        value={finish}
-                        onChangeText={setFinish}
-                        editable={!isLoading}
-                    />
+                    <Pressable onPress={handleFinishPress}>
+                        <StyledTextInput
+                            label="Finish Time"
+                            value={formatDateTime(finish)}
+                            editable={false}
+                        />
+                    </Pressable>
 
                     <StyledTextInput
                         label="Note"
@@ -137,6 +193,34 @@ export default function AddParkedModal() {
                         value={locationString}
                         editable={false}
                     />
+
+                    {Platform.OS === 'ios' && showStartPicker && (
+                        <DateTimePicker
+                            value={start ? new Date(start) : new Date()}
+                            mode="datetime"
+                            display="default"
+                            onChange={(event, selectedDate) => {
+                                setShowStartPicker(false);
+                                if (selectedDate) {
+                                    setStart(selectedDate);
+                                }
+                            }}
+                        />
+                    )}
+
+                    {Platform.OS === 'ios' && showFinishPicker && (
+                        <DateTimePicker
+                            value={finish ? new Date(finish) : new Date()}
+                            mode="datetime"
+                            display="default"
+                            onChange={(event, selectedDate) => {
+                                setShowFinishPicker(false);
+                                if (selectedDate) {
+                                    setFinish(selectedDate);
+                                }
+                            }}
+                        />
+                    )}
                 </ScrollView>
 
                 <View style={styles.buttonContainer}>
@@ -169,17 +253,6 @@ const styles = StyleSheet.create({
         paddingBottom: 16,
         backgroundColor: primaryColor,
         flexGrow: 1,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 8,
-        color: 'white',
-    },
-    pickerWrapper: {
-        backgroundColor: '#fff',
-        borderRadius: 6,
-        marginBottom: 16,
     },
     buttonContainer: {
         padding: 24,
