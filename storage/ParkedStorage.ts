@@ -24,7 +24,24 @@ export class ParkedStorage {
     }
 
     public static getAllParked(db: SQLiteDatabase): ParkedDb[] {
-        return db.getAllSync<ParkedDb>("SELECT * FROM parked ORDER BY start ASC");
+        return db.getAllSync<{
+            id?: number,
+            carId?: number,
+            start?: string,
+            finish?: string,
+            locationId?: number,
+            note?: string,
+        }>("SELECT * FROM parked ORDER BY start DESC")
+            .map(p => {
+                return {
+                    id: p.id,
+                    carId: p.carId,
+                    start: StorageUtil.parseSQLiteDate(p.start),
+                    finish: StorageUtil.parseSQLiteDate(p.finish),
+                    locationId: p.locationId,
+                    note: p.note,
+                } satisfies ParkedDb
+            });
     }
 
     //TODO move to service!!!
