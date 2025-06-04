@@ -15,7 +15,7 @@ import StyledTextInput from '@/components/StyledTextInput';
 import {useLocalSearchParams, useNavigation} from 'expo-router';
 import {useSQLiteContext} from 'expo-sqlite';
 
-import {accentColor, primaryColor} from '@/constants/Colors';
+import {accentColor, primaryColor, textSecondaryColor} from '@/constants/Colors';
 import {Car, LocationDb, ParkedDb} from '@/model/Models';
 import StyledPicker from "@/components/StyledPicker";
 import {LocationStorage} from "@/storage/LocationStorage";
@@ -25,6 +25,8 @@ import DateTimePicker, {DateTimePickerAndroid} from '@react-native-community/dat
 import {useIsFocused} from "@react-navigation/core";
 import {CarStorage} from "@/storage/CarStorage";
 
+
+//TODO rework ios date inputs, make component that will work on both iso and android and use ios spinner inputs
 export default function AddParkedModal() {
     const db = useSQLiteContext();
     const navigation = useNavigation();
@@ -39,8 +41,8 @@ export default function AddParkedModal() {
     const [finish, setFinish] = useState<Date | undefined>();
     const [note, setNote] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [showStartPicker, setShowStartPicker] = useState(false);
-    const [showFinishPicker, setShowFinishPicker] = useState(false);
+
+    const isIos = Platform.OS === 'ios';
 
     useLayoutEffect(() => {
         navigation.setOptions({ title: 'Add Parked Entry' });
@@ -143,8 +145,6 @@ export default function AddParkedModal() {
             showDateTimePickerAndroid(current, (date) => {
                 setStart(date);
             });
-        } else {
-            setShowStartPicker(true);
         }
     };
 
@@ -154,8 +154,6 @@ export default function AddParkedModal() {
             showDateTimePickerAndroid(current, (date) => {
                 setFinish(date);
             });
-        } else {
-            setShowFinishPicker(true);
         }
     };
 
@@ -212,21 +210,70 @@ export default function AddParkedModal() {
                         ]}
                     />
 
-                    <Pressable onPress={handleStartPress}>
-                        <StyledTextInput
-                            label="Start Time"
-                            value={formatDateTime(start)}
-                            editable={false}
-                        />
-                    </Pressable>
+                    {!isIos && (
+                        <Pressable onPress={handleStartPress}>
+                            <StyledTextInput
+                                label="Start Time"
+                                value={formatDateTime(start)}
+                                editable={false}
+                            />
+                        </Pressable>
+                    )}
 
-                    <Pressable onPress={handleFinishPress}>
-                        <StyledTextInput
-                            label="Finish Time"
-                            value={formatDateTime(finish)}
-                            editable={false}
-                        />
-                    </Pressable>
+                    {isIos && (
+                        <View style={{marginBottom: 16}}>
+                            <Text style={{
+                                color: textSecondaryColor,
+                                fontSize: 14,
+                                marginBottom: 4,
+                            }}>
+                                Start Time
+                            </Text>
+                            <DateTimePicker
+                                value={start ? new Date(start) : new Date()}
+                                mode="datetime"
+                                display="compact"
+                                onChange={(event, selectedDate) => {
+                                    if (selectedDate) {
+                                        setStart(selectedDate);
+                                    }
+                                }}
+                            />
+                        </View>
+                    )}
+
+                    {!isIos && (
+                        <Pressable onPress={handleFinishPress}>
+                            <StyledTextInput
+                                label="Finish Time"
+                                value={formatDateTime(finish)}
+                                editable={false}
+                            />
+                        </Pressable>
+                    )}
+
+                    {isIos && (
+                        <View style={{marginBottom: 16}}>
+                            <Text style={{
+                                color: textSecondaryColor,
+                                fontSize: 14,
+                                marginBottom: 4,
+                            }}>
+                                Finish Time
+                            </Text>
+                            <DateTimePicker
+                                value={finish ? new Date(finish) : new Date()}
+                                mode="datetime"
+                                display="compact"
+                                onChange={(event, selectedDate) => {
+                                    if (selectedDate) {
+                                        setFinish(selectedDate);
+                                    }
+                                }}
+                            />
+                        </View>
+                    )}
+
 
                     <StyledTextInput
                         label="Note"
@@ -242,33 +289,6 @@ export default function AddParkedModal() {
                         editable={false}
                     />
 
-                    {Platform.OS === 'ios' && showStartPicker && (
-                        <DateTimePicker
-                            value={start ? new Date(start) : new Date()}
-                            mode="datetime"
-                            display="default"
-                            onChange={(event, selectedDate) => {
-                                setShowStartPicker(false);
-                                if (selectedDate) {
-                                    setStart(selectedDate);
-                                }
-                            }}
-                        />
-                    )}
-
-                    {Platform.OS === 'ios' && showFinishPicker && (
-                        <DateTimePicker
-                            value={finish ? new Date(finish) : new Date()}
-                            mode="datetime"
-                            display="default"
-                            onChange={(event, selectedDate) => {
-                                setShowFinishPicker(false);
-                                if (selectedDate) {
-                                    setFinish(selectedDate);
-                                }
-                            }}
-                        />
-                    )}
                 </ScrollView>
 
                 <View style={styles.buttonContainer}>
