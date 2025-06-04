@@ -3,6 +3,7 @@ import {Parked, ParkedDb} from "@/model/Models";
 import ParkedScreen from "@/app/(tabs)/home";
 import {LocationStorage} from "@/storage/LocationStorage";
 import {CarStorage} from "@/storage/CarStorage";
+import {StorageUtil} from "@/util/StorageUtil";
 
 export class ParkedStorage {
     private constructor() {}
@@ -73,11 +74,12 @@ export class ParkedStorage {
             INSERT INTO parked (carId, start, finish, locationId, note)
             VALUES ($car_id, $start, $finish, $location_id, $note)
         `);
+
         insertStatement.executeSync<ParkedDb>({
             //@ts-ignore
             $car_id: record.carId,
-            $start: record.start,
-            $finish: record.finish,
+            $start: StorageUtil.formatDateForSQLite(record.start),
+            $finish: StorageUtil.formatDateForSQLite(record.finish),
             $location_id: record.locationId,
             $note: record.note
         });

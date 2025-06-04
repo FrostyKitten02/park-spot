@@ -12,7 +12,7 @@ import {
     View
 } from 'react-native';
 import StyledTextInput from '@/components/StyledTextInput';
-import {useNavigation} from 'expo-router';
+import {useLocalSearchParams, useNavigation} from 'expo-router';
 import {useSQLiteContext} from 'expo-sqlite';
 
 import {accentColor, primaryColor} from '@/constants/Colors';
@@ -23,14 +23,17 @@ import {ParkedStorage} from "@/storage/ParkedStorage";
 import * as Location from 'expo-location';
 import DateTimePicker, {DateTimePickerAndroid} from '@react-native-community/datetimepicker';
 import {useIsFocused} from "@react-navigation/core";
+import {CarStorage} from "@/storage/CarStorage";
 
 export default function AddParkedModal() {
     const db = useSQLiteContext();
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+    const { parkedId } = useLocalSearchParams<{ parkedId?: string }>();
 
     const [cars, setCars] = useState<Car[]>([]);
     const [selectedCarId, setSelectedCarId] = useState<number | undefined>();
+    const [locationId, setLocationId] = useState<number | undefined>();
     const [locationString, setLocationString] = useState('');
     const [start, setStart] = useState<Date | undefined>(new Date());
     const [finish, setFinish] = useState<Date | undefined>();
@@ -44,6 +47,11 @@ export default function AddParkedModal() {
     }, []);
 
     useEffect(() => {
+        CarStorage.getCarsAsync(db)
+            .then(res => setCars(res))
+    }, [db, parkedId]);
+
+    useEffect(() => {
         if (isFocused) {
             const task = InteractionManager.runAfterInteractions(() => {
                 fetchLocation();
@@ -51,7 +59,32 @@ export default function AddParkedModal() {
 
             return () => task.cancel();
         }
-    }, [isFocused]);
+    }, [isFocused, parkedId]);
+
+    useEffect(() => {
+        const loadParked = async () => {
+            if (parkedId) {
+                const parked = await ParkedStorage.getParkedByIdAsync(db, Number(parkedId));
+                if (parked) {
+                    setSelectedCarId(parked.carId);
+                    setStart(parked.start ? new Date(parked.start) : undefined);
+                    setFinish(parked.finish ? new Date(parked.finish) : undefined);
+                    setNote(parked.note ?? '');
+
+                    if (parked.locationId) {
+                        const location = LocationStorage.getLocationById(db, parked.locationId);
+                        if (location?.latitude && location?.longitude) {
+                            setLocationString(`${location.latitude},${location.longitude}`);
+                        }
+                    }
+                }
+            }
+        };
+
+        loadParked();
+    }, [db, parkedId]);
+
+
 
     const fetchLocation = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -131,15 +164,23 @@ export default function AddParkedModal() {
         try {
             const [lat, lon] = locationString.split(',');
             const location: LocationDb = { latitude: lat, longitude: lon };
-            const locationId = await LocationStorage.saveLocation(db, location);
 
+            if (!!locationId) {
+                location.id = locationId
+            }
+
+            const savedLocationId = await LocationStorage.saveLocation(db, location);
             const parked: ParkedDb = {
                 carId: selectedCarId,
                 start: start,
                 finish: finish,
                 note: note,
-                locationId: locationId,
+                locationId: savedLocationId,
             };
+
+            if (!!parkedId) {
+                parked.id = Number(parkedId);
+            }
 
             await ParkedStorage.saveParkedAsync(db, parked);
 

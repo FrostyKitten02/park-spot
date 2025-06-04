@@ -6,7 +6,7 @@ const m3: Migration = {
     sql: `
     CREATE TABLE IF NOT EXISTS parked (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      carId INTEGER NOT NULL,
+      carId INTEGER,
       start TEXT,
       finish TEXT,
       locationId INTEGER,

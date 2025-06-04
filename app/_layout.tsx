@@ -72,7 +72,7 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <SQLiteProvider databaseName={"park-spot4"} onInit={async (db) => runMigrations(db)}>
+      <SQLiteProvider databaseName={"park-spot5"} onInit={async (db) => runMigrations(db)}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen

@@ -19,7 +19,6 @@ export default function ParkedScreen() {
             ParkedStorage.getAllParkedFullAsync(db)
                 .then(data => {
                     setParkedList(data);
-                    console.log(data);
                 });
         }
     }, [isFocused, db]);
