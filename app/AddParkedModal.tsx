@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
+    Alert, InteractionManager,
     KeyboardAvoidingView,
     Platform,
     Pressable,
@@ -22,10 +22,12 @@ import { LocationStorage } from "@/storage/LocationStorage";
 import { ParkedStorage } from "@/storage/ParkedStorage";
 import * as Location from 'expo-location';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import {useIsFocused} from "@react-navigation/core";
 
 export default function AddParkedModal() {
     const db = useSQLiteContext();
     const navigation = useNavigation();
+    const isFocused = useIsFocused();
 
     const [cars, setCars] = useState<Car[]>([]);
     const [selectedCarId, setSelectedCarId] = useState<number | undefined>();
@@ -42,9 +44,14 @@ export default function AddParkedModal() {
     }, []);
 
     useEffect(() => {
-        CarStorage.getCarsAsync(db).then(setCars);
-        fetchLocation();
-    }, []);
+        if (isFocused) {
+            const task = InteractionManager.runAfterInteractions(() => {
+                fetchLocation();
+            });
+
+            return () => task.cancel();
+        }
+    }, [isFocused]);
 
     const fetchLocation = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
