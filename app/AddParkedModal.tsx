@@ -45,7 +45,9 @@ export default function AddParkedModal() {
     const isIos = Platform.OS === 'ios';
 
     useLayoutEffect(() => {
-        navigation.setOptions({ title: 'Add Parked Entry' });
+        if (parkedId != '' || parkedId != undefined) {
+            navigation.setOptions({title: 'Update Parked Entry'})
+        }
     }, []);
 
     useEffect(() => {

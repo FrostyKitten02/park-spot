@@ -1,12 +1,12 @@
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import {useSQLiteContext} from 'expo-sqlite';
 import {useEffect, useState} from 'react';
 import {CarStorage} from '@/storage/CarStorage';
 import {Car} from '@/model/Models';
 import CarCard from '@/components/CarCard';
 import {useIsFocused} from '@react-navigation/core';
-import {accentColor} from '@/constants/Colors';
 import FloatingButton from "@/components/FloatingButton";
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export default function CarsScreen() {
     const isFocused = useIsFocused();
@@ -16,27 +16,38 @@ export default function CarsScreen() {
 
     useEffect(() => {
         if (isFocused) {
-            CarStorage.getCarsAsync(db).then(setCars);
+            fetchCars();
         }
     }, [isFocused, db]);
 
-    return (
-        <View style={{flex: 1}}>
-            <ScrollView
-                style={{
-                    marginTop: 4,
-                    marginHorizontal: 4,
-                }}
-                contentContainerStyle={{rowGap: 8, paddingBottom: 80}}
-            >
-                {cars.map((car, index) => (
-                    <CarCard key={index} marginVertical={2} car={car}/>
-                ))}
-            </ScrollView>
+    function fetchCars() {
+        CarStorage.getCarsAsync(db).then(setCars);
+    }
 
-            <FloatingButton
-                link="/AddCarModal"
-            />
-        </View>
+    return (
+        <GestureHandlerRootView>
+            <View style={{flex: 1}}>
+                <ScrollView
+                    style={{
+                        marginTop: 4,
+                        marginHorizontal: 4,
+                    }}
+                    contentContainerStyle={{rowGap: 8, paddingBottom: 80}}
+                >
+                    {cars.map((car, index) => (
+                        <CarCard
+                            key={index}
+                            marginVertical={0}
+                            car={car}
+                            onDelete={fetchCars}
+                        />
+                    ))}
+                </ScrollView>
+
+                <FloatingButton
+                    link="/AddCarModal"
+                />
+            </View>
+        </GestureHandlerRootView>
     );
 }

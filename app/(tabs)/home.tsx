@@ -1,10 +1,11 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
-import { useIsFocused } from '@react-navigation/core';
+import {ScrollView, StyleSheet, View} from 'react-native';
+import {useSQLiteContext} from 'expo-sqlite';
+import {useEffect, useState} from 'react';
+import {useIsFocused} from '@react-navigation/core';
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 
-import { Parked } from '@/model/Models';
-import { ParkedStorage } from '@/storage/ParkedStorage';
+import {Parked} from '@/model/Models';
+import {ParkedStorage} from '@/storage/ParkedStorage';
 import FloatingButton from '@/components/FloatingButton';
 import ParkingCard from '@/components/ParkingCard'; // You need to create this
 
@@ -16,27 +17,37 @@ export default function ParkedScreen() {
 
     useEffect(() => {
         if (isFocused) {
-            ParkedStorage.getAllParkedFullAsync(db)
-                .then(data => {
-                    setParkedList(data);
-                    console.log(data);
-                });
+            fetchParkedList();
         }
     }, [isFocused, db]);
 
-    return (
-        <View style={{ flex: 1 }}>
-            <ScrollView
-                style={styles.scroll}
-                contentContainerStyle={styles.content}
-            >
-                {parkedList.map((item, index) => (
-                    <ParkingCard key={index} parked={item} marginVertical={4}/>
-                ))}
-            </ScrollView>
+    function fetchParkedList() {
+        ParkedStorage.getAllParkedFullAsync(db)
+            .then(data => {
+                setParkedList(data);
+            });
+    }
 
-            <FloatingButton link="/AddParkedModal" />
-        </View>
+    return (
+        <GestureHandlerRootView>
+            <View style={{flex: 1}}>
+                <ScrollView
+                    style={styles.scroll}
+                    contentContainerStyle={styles.content}
+                >
+                    {parkedList.map((item, index) => (
+                        <ParkingCard
+                            key={index}
+                            parked={item}
+                            marginVertical={0}
+                            onDelete={fetchParkedList}
+                        />
+                    ))}
+                </ScrollView>
+
+                <FloatingButton link="/AddParkedModal"/>
+            </View>
+        </GestureHandlerRootView>
     );
 }
 

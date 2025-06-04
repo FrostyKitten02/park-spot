@@ -59,4 +59,9 @@ export class CarStorage {
             $color: car.color,
         });
     }
+
+    public static deleteCardById(db: SQLiteDatabase, id: number): void {
+        const deleteStatement = db.prepareSync("DELETE FROM car WHERE id = $id");
+        deleteStatement.executeSync({ $id: id });
+    }
 }
