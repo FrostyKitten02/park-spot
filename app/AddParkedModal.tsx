@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import {useEffect, useLayoutEffect, useState} from 'react';
 import {
     ActivityIndicator,
-    Alert, InteractionManager,
+    Alert,
+    InteractionManager,
     KeyboardAvoidingView,
     Platform,
     Pressable,
@@ -11,17 +12,16 @@ import {
     View
 } from 'react-native';
 import StyledTextInput from '@/components/StyledTextInput';
-import { useNavigation } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
+import {useNavigation} from 'expo-router';
+import {useSQLiteContext} from 'expo-sqlite';
 
-import { accentColor, primaryColor } from '@/constants/Colors';
-import { CarStorage } from '@/storage/CarStorage';
-import { Car, LocationDb, ParkedDb } from '@/model/Models';
+import {accentColor, primaryColor} from '@/constants/Colors';
+import {Car, LocationDb, ParkedDb} from '@/model/Models';
 import StyledPicker from "@/components/StyledPicker";
-import { LocationStorage } from "@/storage/LocationStorage";
-import { ParkedStorage } from "@/storage/ParkedStorage";
+import {LocationStorage} from "@/storage/LocationStorage";
+import {ParkedStorage} from "@/storage/ParkedStorage";
 import * as Location from 'expo-location';
-import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import DateTimePicker, {DateTimePickerAndroid} from '@react-native-community/datetimepicker';
 import {useIsFocused} from "@react-navigation/core";
 
 export default function AddParkedModal() {
