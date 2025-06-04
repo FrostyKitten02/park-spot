@@ -1,40 +1,63 @@
 import {SQLiteDatabase} from "expo-sqlite";
-import {SimpleParked} from "@/model/Models";
+import {Parked, ParkedDb} from "@/model/Models";
+import ParkedScreen from "@/app/(tabs)/home";
+import {LocationStorage} from "@/storage/LocationStorage";
+import {CarStorage} from "@/storage/CarStorage";
 
 export class ParkedStorage {
     private constructor() {}
 
-    public static async getParkedByIdAsync(db: SQLiteDatabase, id: number): Promise<SimpleParked | null> {
+    public static async getParkedByIdAsync(db: SQLiteDatabase, id: number): Promise<ParkedDb | null> {
         return ParkedStorage.getParkedById(db, id);
     }
 
-    public static getParkedById(db: SQLiteDatabase, id: number): SimpleParked | null {
+    public static getParkedById(db: SQLiteDatabase, id: number): ParkedDb | null {
         const statement = db.prepareSync("SELECT * FROM parked WHERE id = $id");
-        const res = statement.executeSync<SimpleParked>({ $id: id });
+        const res = statement.executeSync<ParkedDb>({ $id: id });
         return res.getFirstSync();
     }
 
-    public static async getAllParkedAsync(db: SQLiteDatabase): Promise<SimpleParked[]> {
+    public static async getAllParkedAsync(db: SQLiteDatabase): Promise<ParkedDb[]> {
         return ParkedStorage.getAllParked(db);
     }
 
-    public static getAllParked(db: SQLiteDatabase): SimpleParked[] {
-        return db.getAllSync<SimpleParked>("SELECT * FROM parked");
+    public static getAllParked(db: SQLiteDatabase): ParkedDb[] {
+        return db.getAllSync<ParkedDb>("SELECT * FROM parked");
     }
 
-    public static async saveParkedAsync(db: SQLiteDatabase, record: SimpleParked): Promise<void> {
+    //TODO move to service!!!
+    public static async getAllParkedFullAsync(db: SQLiteDatabase): Promise<Parked[]> {
+        return ParkedStorage.getAllParkedFull(db);
+    }
+
+    //TODO move to service!!!
+    public static getAllParkedFull(db: SQLiteDatabase): Parked[] {
+        const res = ParkedStorage.getAllParked(db);
+        return res.map((parked: ParkedDb) => {
+            return {
+                id: parked.id,
+                start: parked.start,
+                finish: parked.finish,
+                note: parked.note,
+                location: parked.locationId?LocationStorage.getLocationById(db, parked.locationId):undefined,
+                car: parked.carId?CarStorage.getCarById(db, parked.carId):undefined
+            }
+        })
+    }
+
+    public static async saveParkedAsync(db: SQLiteDatabase, record: ParkedDb): Promise<void> {
         return ParkedStorage.saveParked(db, record);
     }
 
-    public static saveParked(db: SQLiteDatabase, record: SimpleParked): void {
+    public static saveParked(db: SQLiteDatabase, record: ParkedDb): void {
         if (record.id) {
             const updateStatement = db.prepareSync(`
                 UPDATE parked
-                SET car_id = $car_id, start = $start, finish = $finish,
-                    location_id = $location_id, note = $note
+                SET carId = $car_id, start = $start, finish = $finish,
+                    locationId = $location_id, note = $note
                 WHERE id = $id
             `);
-            updateStatement.executeSync<SimpleParked>({
+            updateStatement.executeSync<ParkedDb>({
                 //@ts-ignore
                 $id: record.id,
                 $car_id: record.carId,
@@ -47,10 +70,10 @@ export class ParkedStorage {
         }
 
         const insertStatement = db.prepareSync(`
-            INSERT INTO parked (car_id, start, finish, location_id, note)
+            INSERT INTO parked (carId, start, finish, locationId, note)
             VALUES ($car_id, $start, $finish, $location_id, $note)
         `);
-        insertStatement.executeSync<SimpleParked>({
+        insertStatement.executeSync<ParkedDb>({
             //@ts-ignore
             $car_id: record.carId,
             $start: record.start,

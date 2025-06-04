@@ -5,11 +5,11 @@ import {SQLiteDatabase} from "expo-sqlite";
 export class CarStorage {
     private constructor() {}
 
-    public static async getCarByIdAsync(db: SQLiteDatabase, id: number): Promise<Car | null> {
+    public static async getCarByIdAsync(db: SQLiteDatabase, id: number): Promise<Car | undefined> {
         return CarStorage.getCarById(db, id);
     }
 
-    public static getCarById(db: SQLiteDatabase, id: number): Car | null {
+    public static getCarById(db: SQLiteDatabase, id: number): Car | undefined {
         const statment = db.prepareSync('SELECT * FROM car WHERE id = $id')
         const res = statment.executeSync<Car>(
             {
@@ -17,7 +17,7 @@ export class CarStorage {
             }
         )
 
-        return res.getFirstSync();
+        return res.getFirstSync()??undefined;
     }
 
     public static async getCarsAsync(db: SQLiteDatabase): Promise<Car[]> {

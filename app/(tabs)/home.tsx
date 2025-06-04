@@ -16,7 +16,11 @@ export default function ParkedScreen() {
 
     useEffect(() => {
         if (isFocused) {
-            ParkedStorage.getAllParkedAsync(db).then(setParkedList);
+            ParkedStorage.getAllParkedFullAsync(db)
+                .then(data => {
+                    setParkedList(data);
+                    console.log(data);
+                });
         }
     }, [isFocused, db]);
 

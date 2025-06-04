@@ -6,13 +6,13 @@ const m3: Migration = {
     sql: `
     CREATE TABLE IF NOT EXISTS parked (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      car_id INTEGER NOT NULL,
+      carId INTEGER NOT NULL,
       start TEXT,
       finish TEXT,
-      location_id INTEGER,
+      locationId INTEGER,
       note TEXT,
-      FOREIGN KEY (car_id) REFERENCES car(id),
-      FOREIGN KEY (location_id) REFERENCES location(id)
+      FOREIGN KEY (carId) REFERENCES car(id),
+      FOREIGN KEY (locationId) REFERENCES location(id)
     );
   `
 };

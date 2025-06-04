@@ -16,7 +16,7 @@ import {useSQLiteContext} from 'expo-sqlite';
 
 import {accentColor, primaryColor} from '@/constants/Colors';
 import {CarStorage} from '@/storage/CarStorage';
-import {Car, Location as Loc, Parked} from '@/model/Models';
+import {Car, Location as Loc, LocationDb, Parked, ParkedDb} from '@/model/Models';
 import StyledPicker from "@/components/StyledPicker";
 import {LocationStorage} from "@/storage/LocationStorage";
 import {ParkedStorage} from "@/storage/ParkedStorage";
@@ -67,23 +67,23 @@ export default function AddParkedModal() {
             const [lat, lon] = locationString.split(',');
 
             //TODO check saving location successfull then procceed to save parked
-            const location: Loc = { latitude: lat, longitude: lon };
-            await LocationStorage.saveLocation(db, location);
+            const location: LocationDb = { latitude: lat, longitude: lon };
+            const locationId = LocationStorage.saveLocation(db, location);
 
-            // const latest = LocationStorage.getLocations(db).slice(-1)[0];
-            //
-            // const parked: Parked = {
-            //     car_id: selectedCarId,
-            //     start,
-            //     finish,
-            //     note,
-            //     location_id: latest.id,
-            // };
-            //
-            // await ParkedStorage.saveParkedAsync(db, parked);
-            //
-            // Alert.alert('Success', 'Parked entry added!');
-            // navigation.goBack();
+            const parked: ParkedDb = {
+                carId: selectedCarId,
+                // start,
+                // finish,
+                note: note,
+                locationId: locationId,
+            };
+
+            console.log(parked);
+
+            await ParkedStorage.saveParkedAsync(db, parked);
+
+            Alert.alert('Success', 'Parked entry added!');
+            navigation.goBack();
         } catch (e) {
             console.error(e);
             Alert.alert('Error', 'Failed to save entry.');

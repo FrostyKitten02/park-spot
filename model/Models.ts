@@ -1,8 +1,17 @@
+//TODO make database models and ui models separate
+
 export interface Car {
     id?: number,
     name?: string,
     registrationPlateNumber?: string,
-    color?: string, //TODO???
+    color?: string,
+}
+
+export interface CarDb {
+    id?: number,
+    name?: string,
+    registrationPlateNumber?: string,
+    color?: string,
 }
 
 export interface Parked {
@@ -14,7 +23,7 @@ export interface Parked {
     note?: string,
 }
 
-export interface SimpleParked {
+export interface ParkedDb {
     id?: number,
     carId?: number,
     start?: Date,
@@ -24,6 +33,12 @@ export interface SimpleParked {
 }
 
 export interface Location {
+    id?: number,
+    longitude?: string,
+    latitude?: string,
+}
+
+export interface LocationDb {
     id?: number,
     longitude?: string,
     latitude?: string,
