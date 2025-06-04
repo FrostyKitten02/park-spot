@@ -1,10 +1,11 @@
 import {SQLiteDatabase} from "expo-sqlite";
 import {Parked, ParkedDb} from "@/model/Models";
-import ParkedScreen from "@/app/(tabs)/home";
 import {LocationStorage} from "@/storage/LocationStorage";
 import {CarStorage} from "@/storage/CarStorage";
 import {StorageUtil} from "@/util/StorageUtil";
 
+
+//TODO convert dates from database to date object!!!
 export class ParkedStorage {
     private constructor() {}
 
@@ -23,7 +24,7 @@ export class ParkedStorage {
     }
 
     public static getAllParked(db: SQLiteDatabase): ParkedDb[] {
-        return db.getAllSync<ParkedDb>("SELECT * FROM parked");
+        return db.getAllSync<ParkedDb>("SELECT * FROM parked ORDER BY start ASC");
     }
 
     //TODO move to service!!!
@@ -62,8 +63,8 @@ export class ParkedStorage {
                 //@ts-ignore
                 $id: record.id,
                 $car_id: record.carId,
-                $start: record.start,
-                $finish: record.finish,
+                $start: StorageUtil.formatDateForSQLite(record.start),
+                $finish: StorageUtil.formatDateForSQLite(record.finish),
                 $location_id: record.locationId,
                 $note: record.note
             });

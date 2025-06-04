@@ -31,18 +31,21 @@ export default function TabLayout() {
                 name="cars"
                 options={{
                     tabBarIcon: ({color}) => <TabBarIcon name="car" color={color} />,
+                    title: "Cars"
                 }}
             />
             <Tabs.Screen
                 name="home"
                 options={{
                     tabBarIcon: ({color}) => <TabBarIcon name="home" color={color} />,
+                    title: "Home"
                 }}
             />
             <Tabs.Screen
                 name="settings"
                 options={{
                     tabBarIcon: ({color}) => <TabBarIcon name="gear" color={color} />,
+                    title: "Settings"
                 }}
             />
         </Tabs>

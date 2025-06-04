@@ -286,7 +286,7 @@ export default function AddParkedModal() {
                         {isLoading ? (
                             <ActivityIndicator size="small" color={primaryColor} />
                         ) : (
-                            <Text style={styles.buttonText}>Add Parked Entry</Text>
+                            <Text style={styles.buttonText}>{!!parkedId?"Update Parking":"Add Parking"}</Text>
                         )}
                     </Pressable>
                 </View>
