@@ -75,6 +75,7 @@ export default function ParkingCard(props: {
                 }
                 router.push(`/AddParkedModal?parkedId=${props.parked.id}`)
             }}
+            iconColor={props.parked.car?.color}
             marginVertical={props.marginVertical}
             title={props.parked?.car?.name??"Parking"}
             secondaryText={getDateTimeStr()}

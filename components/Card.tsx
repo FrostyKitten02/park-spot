@@ -5,7 +5,6 @@ import {accentColor2, primaryColor, textAccentColor, textSecondaryColor} from "@
 import {ColorValue, Pressable, StyleSheet} from "react-native";
 import Reanimated, {SharedValue, useAnimatedStyle,} from 'react-native-reanimated';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import {GestureDetector, Gesture, GestureHandlerRootView} from "react-native-gesture-handler";
 
 
 const circleRadius = 50;
@@ -32,7 +31,8 @@ function SwipeAction(prog: SharedValue<number>, drag: SharedValue<number>, actio
                     borderTopLeftRadius: wrapperBorderRadius,
                     textAlign: "center",
                     textAlignVertical: "center",
-                    backgroundColor: rightActionColor}}
+                    backgroundColor: rightActionColor
+                }}
                 onPress={action}
             >
                 {rightActionText}
@@ -51,6 +51,7 @@ export default function Card(
         rightActionText,
         rightActionFn,
         rightActionColor,
+        iconColor,
     }: {
         title: string;
         secondaryText: string;
@@ -60,6 +61,7 @@ export default function Card(
         rightActionText: string;
         rightActionFn?: () => void;
         rightActionColor: ColorValue;
+        iconColor?: string;
     }
 ) {
     const lastPress = useRef<number | null>(null);
@@ -81,7 +83,7 @@ export default function Card(
     }
 
 
-    const wrapperStyle= [styles.container, {marginVertical: marginVertical}];
+    const wrapperStyle = [styles.container, {marginVertical: marginVertical}];
 
     return (
         <ReanimatedSwipeable
@@ -89,9 +91,9 @@ export default function Card(
             friction={2}
             enableTrackpadTwoFingerGesture
             rightThreshold={40}
-            renderRightActions={!!rightActionFn?(prog, drag, sm) => {
+            renderRightActions={!!rightActionFn ? (prog, drag, sm) => {
                 return SwipeAction(prog, drag, rightActionFn, rightActionText, rightActionColor);
-            }:undefined}
+            } : undefined}
         >
             <Pressable
                 onPress={() => {
@@ -122,14 +124,40 @@ export default function Card(
                             backgroundColor: primaryColor,
                         }}
                     >
-                        <Text
+                        <View
                             style={{
-                                color: textAccentColor,
-                                fontSize: 16
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 8,
+                                backgroundColor: primaryColor,
                             }}
                         >
-                            {title}
-                        </Text>
+                            <Text
+                                style={{
+                                    color: textAccentColor,
+                                    fontSize: 16,
+                                }}
+                            >
+                                {title}
+                            </Text>
+                            {iconColor ? (
+                                <View
+                                    style={{
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: 4,
+                                        backgroundColor: iconColor,
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 1 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 2,
+                                        elevation: 3,
+                                    }}
+                                />
+                            ) : null}
+                        </View>
+
                         <Text
                             style={{
                                 color: textSecondaryColor,

@@ -18,7 +18,7 @@ export class SettingsStorage {
     }
 
     public static async setDefaultCarId(carId: number | undefined) {
-        if (carId === undefined) {
+        if (carId === undefined || carId === -1) {
             return await AsyncStorage.removeItem(SettingsStorage.defaultCarIdKey);
         }
 

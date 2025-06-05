@@ -22,6 +22,7 @@ export default function CarCard(props: {
             onDoublePress={() => {
                 router.push(`/AddCarModal?carId=${props.car.id}`)
             }}
+            iconColor={props.car.color}
             marginVertical={props.marginVertical}
             title={props.car.name??""}
             secondaryText={props.car.registrationPlateNumber??""}

@@ -1,22 +1,12 @@
-import { useEffect, useState } from 'react';
-import {
-    ScrollView,
-    StyleSheet,
-    View,
-    Text,
-    Pressable,
-    Alert,
-    ActivityIndicator,
-} from 'react-native';
-import { useSQLiteContext } from 'expo-sqlite';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useEffect, useState} from 'react';
+import {ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View,} from 'react-native';
+import {useSQLiteContext} from 'expo-sqlite';
 import StyledPicker from '@/components/StyledPicker';
-import { CarStorage } from '@/storage/CarStorage';
-import { Car } from '@/model/Models';
-import { accentColor, primaryColor } from '@/constants/Colors';
+import {CarStorage} from '@/storage/CarStorage';
+import {Car} from '@/model/Models';
+import {accentColor, primaryColor} from '@/constants/Colors';
 import {useSettings} from "@/context/SettingsContext";
 import {useIsFocused} from "@react-navigation/core";
-import {SettingsStorage} from "@/storage/SettingsStorage";
 
 export default function SettingsScreen() {
     const db = useSQLiteContext();
@@ -64,10 +54,12 @@ export default function SettingsScreen() {
                 <StyledPicker
                     label="Default Car"
                     selectedValue={defaultCarId}
-                    onValueChange={setDefaultCarId}
+                    onValueChange={(val) => {
+                        setDefaultCarId(val);
+                    }}
                     enabled={!isSaving}
                     options={[
-                        { label: 'Select a car...', value: undefined },
+                        { label: 'Select a car...', value: -1 },
                         ...cars.map((car) => ({ label: car.name ?? '', value: car.id })),
                     ]}
                 />

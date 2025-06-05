@@ -125,7 +125,7 @@ export default function AddCarModal() {
 
                     <StyledTextInput
                         label="Color"
-                        placeholder="Enter car color"
+                        placeholder="Enter car color in hex or color name"
                         value={color}
                         onChangeText={setColor}
                         editable={!isLoading}
