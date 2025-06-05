@@ -8,7 +8,7 @@ export class SettingsStorage {
     public static async getSettings(): Promise<Settings> {
         const defaultCarId = await AsyncStorage.getItem(SettingsStorage.defaultCarIdKey)
 
-        if (!!defaultCarId) {
+        if (defaultCarId == null) {
             return {};
         }
 

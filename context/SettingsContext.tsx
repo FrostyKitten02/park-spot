@@ -22,7 +22,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, []);
 
     const setDefaultCarId = async (id: number | undefined) => {
-        await SettingsStorage.setDefaultCarId(id)
+        await SettingsStorage.setDefaultCarId(id);
+        const st = await SettingsStorage.getSettings();
+        setSettings(st);
     };
 
     return (

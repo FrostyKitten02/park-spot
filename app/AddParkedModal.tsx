@@ -25,12 +25,14 @@ import DateTimePicker, {DateTimePickerAndroid} from '@react-native-community/dat
 import {useIsFocused} from "@react-navigation/core";
 import {CarStorage} from "@/storage/CarStorage";
 import LocationPickerModal from '@/components/LocationPickerModal';
+import {useSettings} from "@/context/SettingsContext";
 
 
 //TODO rework ios date inputs, make component that will work on both iso and android and use ios spinner inputs
 export default function AddParkedModal() {
     const db = useSQLiteContext();
     const navigation = useNavigation();
+    const settings = useSettings();
     const {parkedId} = useLocalSearchParams<{ parkedId?: string }>();
 
     const [cars, setCars] = useState<Car[]>([]);
@@ -82,6 +84,12 @@ export default function AddParkedModal() {
 
         loadParked();
     }, [db, parkedId]);
+
+    useEffect(() => {
+        if (!parkedId) {
+            setSelectedCarId(settings.defaultCarId);
+        }
+    }, [parkedId, settings])
 
 
     const fetchLocation = async () => {
@@ -154,7 +162,6 @@ export default function AddParkedModal() {
     };
 
     const handleSubmit = async () => {
-        console.log("SUBMITED")
         setIsLoading(true);
         try {
             const [lat, lon] = locationString.split(',');

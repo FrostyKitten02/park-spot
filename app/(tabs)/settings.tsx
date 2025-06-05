@@ -16,6 +16,7 @@ import { Car } from '@/model/Models';
 import { accentColor, primaryColor } from '@/constants/Colors';
 import {useSettings} from "@/context/SettingsContext";
 import {useIsFocused} from "@react-navigation/core";
+import {SettingsStorage} from "@/storage/SettingsStorage";
 
 export default function SettingsScreen() {
     const db = useSQLiteContext();
@@ -27,6 +28,11 @@ export default function SettingsScreen() {
     const [defaultCarId, setDefaultCarId] = useState<number | undefined>();
     const [isSaving, setIsSaving] = useState(false);
 
+    useEffect(() => {
+        if (isFocused) {
+            setDefaultCarId(settings.defaultCarId);
+        }
+    }, [isFocused, settings]);
 
     useEffect(() => {
         if (isFocused) {
@@ -41,11 +47,9 @@ export default function SettingsScreen() {
     }
 
     const saveDefaultCar = async () => {
-        if (!defaultCarId) return;
-
         try {
             setIsSaving(true);
-            await AsyncStorage.setItem('defaultCarId', String(defaultCarId));
+            await settings.setDefaultCarId(defaultCarId);
             Alert.alert('Success', 'Default car saved.');
         } catch (error) {
             Alert.alert('Error', 'Failed to save default car.');
