@@ -3,10 +3,14 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import {runMigrations} from "@/storage/migrate";
+import db from "@/storage/database";
+import {SQLiteProvider} from "expo-sqlite";
+import AddCarModal from "@/app/AddCarModal";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -33,10 +37,28 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    async function hideSplashAfterDelay() {
+      if (loaded) {
+        // try {
+        //   db.closeSync()
+        //   runMigrations();
+        // } catch (err) {
+        //   console.error(err);
+        // }
+        await new Promise(resolve => setTimeout(resolve, 250));
+        await SplashScreen.hideAsync();
+      }
     }
+
+    hideSplashAfterDelay();
   }, [loaded]);
+
+
+  // useEffect(() => {
+  //   return () => {
+  //     db.closeSync()
+  //   };
+  // }, []);
 
   if (!loaded) {
     return null;
@@ -50,10 +72,32 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <SQLiteProvider databaseName={"park-spot6"} onInit={async (db) => runMigrations(db)}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+              name="AddCarModal"
+              options={{
+                title: 'Add a New Car',
+                presentation: 'modal'
+              }}
+          />
+          <Stack.Screen
+              name="AddParkedModal"
+              options={{
+                title: 'Add Parking',
+                presentation: 'modal'
+              }}
+          />
+          <Stack.Screen
+              name="MapScreen"
+              options={{
+                  headerShown: true,
+                  headerTitle: ''
+              }}
+          />
+        </Stack>
+      </SQLiteProvider>
     </ThemeProvider>
   );
 }
