@@ -9,7 +9,8 @@ import {useSQLiteContext} from "expo-sqlite";
 export default function ParkingCard(props: {
     parked: Parked
     marginVertical: number,
-    onDelete: () => void,
+    onDelete?: () => void,
+    viewOnly?: boolean
 }) {
     const db = useSQLiteContext();
     const router = useRouter();
@@ -23,11 +24,35 @@ export default function ParkingCard(props: {
         return props.parked.start.toLocaleString();
     }
 
-
+    const deleteAction = !!props.onDelete && !props.viewOnly;
     return (
         <Card
             onPress={() => {
-                if (props.parked.id == undefined) {
+                const lat = props.parked.location?.latitude;
+                const long = props.parked.location?.longitude;
+                const parkedId = props.parked.id;
+
+                if (lat == undefined || long == undefined || parkedId == undefined) {
+                    Alert.alert(
+                        'Error opening parking location',
+                        'There was an error opening your parking location.',
+                        [
+                            {
+                                text: 'Ok',
+                            },
+                        ],
+                        {
+                            cancelable: true,
+                        },
+                    );
+
+                    return;
+                }
+
+                router.push(`/MapScreen?latitude=${lat}&longitude=${long}&parkedId=${parkedId}`);
+            }}
+            onDoublePress={()=>{
+                if (props.parked.id == undefined || !!props.viewOnly) {
                     return;
                 }
                 router.push(`/AddParkedModal?parkedId=${props.parked.id}`)
@@ -37,7 +62,7 @@ export default function ParkingCard(props: {
             secondaryText={getDateTimeStr()}
             rightActionColor={"#FF3B30"}
             rightActionText={"Delete"}
-            rightActionFn={() => {
+            rightActionFn={deleteAction?() => {
                 Alert.alert(
                     'Delete parking',
                     'Are you sure you want to delete this parking?',
@@ -52,7 +77,7 @@ export default function ParkingCard(props: {
                                     return;
                                 }
                                 ParkedStorage.deleteParkedById(db, props.parked.id)
-                                props.onDelete();
+                                props.onDelete!();
                             },
                             style: 'destructive',
                         }
@@ -61,7 +86,7 @@ export default function ParkingCard(props: {
                         cancelable: true,
                     },
                 );
-            }}
+            }:undefined}
         />
     )
 }

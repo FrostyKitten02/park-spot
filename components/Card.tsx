@@ -1,10 +1,12 @@
 import {Text, View} from "@/components/Themed";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React from "react";
+import React, {useRef} from "react";
 import {accentColor2, primaryColor, textAccentColor, textSecondaryColor} from "@/constants/Colors";
 import {ColorValue, Pressable, StyleSheet} from "react-native";
 import Reanimated, {SharedValue, useAnimatedStyle,} from 'react-native-reanimated';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import {GestureDetector, Gesture, GestureHandlerRootView} from "react-native-gesture-handler";
+
 
 const circleRadius = 50;
 const borderRadius = circleRadius / 2;
@@ -45,6 +47,7 @@ export default function Card(
         secondaryText,
         marginVertical,
         onPress,
+        onDoublePress,
         rightActionText,
         rightActionFn,
         rightActionColor,
@@ -53,11 +56,31 @@ export default function Card(
         secondaryText: string;
         marginVertical: number;
         onPress: () => void;
+        onDoublePress: () => void;
         rightActionText: string;
-        rightActionFn: () => void;
+        rightActionFn?: () => void;
         rightActionColor: ColorValue;
     }
 ) {
+    const lastPress = useRef<number | null>(null);
+
+    function handlePress() {
+        const now = Date.now();
+        if (lastPress.current && now - lastPress.current < 300) {
+            onDoublePress();
+            lastPress.current = null;
+        } else {
+            lastPress.current = now;
+            setTimeout(() => {
+                if (lastPress.current && Date.now() - lastPress.current >= 300) {
+                    onPress();
+                    lastPress.current = null;
+                }
+            }, 300);
+        }
+    }
+
+
     const wrapperStyle= [styles.container, {marginVertical: marginVertical}];
 
     return (
@@ -66,13 +89,13 @@ export default function Card(
             friction={2}
             enableTrackpadTwoFingerGesture
             rightThreshold={40}
-            renderRightActions={(prog, drag, sm) => {
+            renderRightActions={!!rightActionFn?(prog, drag, sm) => {
                 return SwipeAction(prog, drag, rightActionFn, rightActionText, rightActionColor);
-            }}
+            }:undefined}
         >
             <Pressable
                 onPress={() => {
-                    onPress();
+                    handlePress();
                 }}
             >
                 <View style={{
@@ -128,6 +151,7 @@ const styles = StyleSheet.create(
             backgroundColor: primaryColor,
             paddingVertical: paddingVertical,
             paddingHorizontal: 16,
+            width: "100%",
             borderRadius: wrapperBorderRadius,
         }
     }

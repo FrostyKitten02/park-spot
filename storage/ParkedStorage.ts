@@ -44,6 +44,28 @@ export class ParkedStorage {
             });
     }
 
+    public static async getAllParkedByIdAsync(db: SQLiteDatabase, id: number): Promise<ParkedDb | undefined> {
+        return ParkedStorage.getParkedByIdFull(db, id)
+    }
+
+    public static async getParkedByIdFull(db: SQLiteDatabase, id: number): Promise<Parked | undefined> {
+        const parked = ParkedStorage.getParkedById(db, id);
+
+        if (!parked) {
+            return undefined;
+        }
+
+        return {
+            id: parked.id,
+            start: parked.start,
+            finish: parked.finish,
+            note: parked.note,
+            location: parked.locationId?LocationStorage.getLocationById(db, parked.locationId):undefined,
+            car: parked.carId?CarStorage.getCarById(db, parked.carId):undefined
+        }
+    }
+
+
     //TODO move to service!!!
     public static async getAllParkedFullAsync(db: SQLiteDatabase): Promise<Parked[]> {
         return ParkedStorage.getAllParkedFull(db);

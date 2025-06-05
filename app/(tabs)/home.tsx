@@ -1,4 +1,4 @@
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {Button, ScrollView, StyleSheet, View} from 'react-native';
 import {useSQLiteContext} from 'expo-sqlite';
 import {useEffect, useState} from 'react';
 import {useIsFocused} from '@react-navigation/core';
@@ -7,11 +7,13 @@ import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {Parked} from '@/model/Models';
 import {ParkedStorage} from '@/storage/ParkedStorage';
 import FloatingButton from '@/components/FloatingButton';
-import ParkingCard from '@/components/ParkingCard'; // You need to create this
+import ParkingCard from '@/components/ParkingCard';
+import {useRouter} from "expo-router";
 
 export default function ParkedScreen() {
     const db = useSQLiteContext();
     const isFocused = useIsFocused();
+    const router = useRouter();
 
     const [parkedList, setParkedList] = useState<Parked[]>([]);
 

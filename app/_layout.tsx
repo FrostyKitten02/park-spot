@@ -89,6 +89,13 @@ function RootLayoutNav() {
                 presentation: 'modal'
               }}
           />
+          <Stack.Screen
+              name="MapScreen"
+              options={{
+                  headerShown: true,
+                  headerTitle: ''
+              }}
+          />
         </Stack>
       </SQLiteProvider>
     </ThemeProvider>

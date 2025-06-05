@@ -17,6 +17,9 @@ export default function CarCard(props: {
     return (
         <Card
             onPress={() => {
+
+            }}
+            onDoublePress={() => {
                 router.push(`/AddCarModal?carId=${props.car.id}`)
             }}
             marginVertical={props.marginVertical}
