@@ -31,7 +31,6 @@ import LocationPickerModal from '@/components/LocationPickerModal';
 export default function AddParkedModal() {
     const db = useSQLiteContext();
     const navigation = useNavigation();
-    const isFocused = useIsFocused();
     const {parkedId} = useLocalSearchParams<{ parkedId?: string }>();
 
     const [cars, setCars] = useState<Car[]>([]);
@@ -43,35 +42,25 @@ export default function AddParkedModal() {
     const [note, setNote] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showLocationPicker, setShowLocationPicker] = useState(false);
-    const [tempLat, setTempLat] = useState('');
-    const [tempLon, setTempLon] = useState('');
 
 
     const isIos = Platform.OS === 'ios';
 
-    useLayoutEffect(() => {
-        if (parkedId != '' || parkedId != undefined) {
-            navigation.setOptions({title: 'Update Parked Entry'})
-        }
-    }, []);
 
     useEffect(() => {
         CarStorage.getCarsAsync(db)
             .then(res => setCars(res))
-    }, [db, parkedId]);
 
-    useEffect(() => {
-        if (isFocused) {
-            const task = InteractionManager.runAfterInteractions(() => {
-                fetchLocation();
-            });
+        const task = InteractionManager.runAfterInteractions(() => {
+            fetchLocation();
+        });
 
-            return () => task.cancel();
-        }
-    }, [isFocused, parkedId]);
+        return () => task.cancel();
+    }, [db]);
 
     useEffect(() => {
         const loadParked = async () => {
+            navigation.setOptions({title: !!parkedId ? 'Update Parked Entry' : 'Add Parked Entry'})
             if (parkedId) {
                 const parked = await ParkedStorage.getParkedByIdAsync(db, Number(parkedId));
                 if (parked) {
@@ -165,6 +154,7 @@ export default function AddParkedModal() {
     };
 
     const handleSubmit = async () => {
+        console.log("SUBMITED")
         setIsLoading(true);
         try {
             const [lat, lon] = locationString.split(',');
@@ -291,15 +281,26 @@ export default function AddParkedModal() {
                     />
 
 
-                    <StyledTextInput
-                        label="Location"
-                        value={locationString}
-                        editable={false}
-                        onPress={() => {
-                            console.log("LOCATION PICKER CLICKED!!")
+                    {isIos ? (
+                        <StyledTextInput
+                            label="Location"
+                            value={locationString}
+                            editable={false}
+                            onPress={() => {
+                                setShowLocationPicker(true);
+                            }}
+                        />
+                    ) : (
+                        <Pressable onPress={() => {
                             setShowLocationPicker(true);
-                        }}
-                    />
+                        }}>
+                            <StyledTextInput
+                                label="Location"
+                                value={locationString}
+                                editable={false}
+                            />
+                        </Pressable>
+                    )}
 
 
                 </ScrollView>
@@ -311,11 +312,7 @@ export default function AddParkedModal() {
                     onChange={(value) => {
                         setLocationString(value.latitude + "," + value.longitude);
                     }}
-                    onSave={() => {
-                        setLocationString(`${tempLat},${tempLon}`);
-                        setShowLocationPicker(false);
-                    }}
-                    onCancel={() => setShowLocationPicker(false)}
+                    onExit={() => setShowLocationPicker(false)}
                 />
 
                 <View style={styles.buttonContainer}>

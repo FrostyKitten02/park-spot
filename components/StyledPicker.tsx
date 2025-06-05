@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import {View, Text, StyleSheet, Platform} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { accentColor, primaryColor, textSecondaryColor } from '@/constants/Colors';
 
@@ -10,17 +10,13 @@ interface StyledPickerProps<T> {
     options: { label: string; value: T }[];
 }
 
-export default function StyledPicker<T>({
-                                            label,
-                                            selectedValue,
-                                            onValueChange,
-                                            enabled = true,
-                                            options,
-                                        }: StyledPickerProps<T>) {
+export default function StyledPicker<T>(props: StyledPickerProps<T>) {
+    const { label, selectedValue, onValueChange, enabled = true, options } = props;
+
     return (
         <View style={styles.container}>
             {label && <Text style={styles.label}>{label}</Text>}
-            <View style={styles.pickerWrapper}>
+            <View style={[styles.pickerWrapper, Platform.OS === 'ios' && styles.pickerWrapperIOS]}>
                 <Picker
                     selectedValue={selectedValue}
                     onValueChange={onValueChange}
@@ -56,13 +52,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         height: 48,
     },
+    pickerWrapperIOS: {
+        borderWidth: 0,
+    },
     picker: {
         color: textSecondaryColor,
         width: '100%',
-        height: 48,
-        paddingHorizontal: 8,
+        margin: 0,
+        padding: 0,
     },
     pickerItem: {
         fontSize: 16,
+        padding: 0,
+        margin: 0
     },
 });

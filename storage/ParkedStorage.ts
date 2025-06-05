@@ -3,11 +3,22 @@ import {Parked, ParkedDb} from "@/model/Models";
 import {LocationStorage} from "@/storage/LocationStorage";
 import {CarStorage} from "@/storage/CarStorage";
 import {StorageUtil} from "@/util/StorageUtil";
+import ParkedScreen from "@/app/(tabs)/home";
+
+interface ParkedRaw {
+    id?: number,
+    carId?: number,
+    start?: string,
+    finish?: string,
+    locationId?: number,
+    note?: string,
+}
 
 
 //TODO convert dates from database to date object!!!
 export class ParkedStorage {
-    private constructor() {}
+    private constructor() {
+    }
 
     public static async getParkedByIdAsync(db: SQLiteDatabase, id: number): Promise<ParkedDb | null> {
         return ParkedStorage.getParkedById(db, id);
@@ -15,8 +26,9 @@ export class ParkedStorage {
 
     public static getParkedById(db: SQLiteDatabase, id: number): ParkedDb | null {
         const statement = db.prepareSync("SELECT * FROM parked WHERE id = $id");
-        const res = statement.executeSync<ParkedDb>({ $id: id });
-        return res.getFirstSync();
+        const res = statement.executeSync<ParkedRaw>({$id: id});
+        const raw = res.getFirstSync();
+        return ParkedStorage.mapRawToDb(raw);
     }
 
     public static async getAllParkedAsync(db: SQLiteDatabase): Promise<ParkedDb[]> {
@@ -24,14 +36,7 @@ export class ParkedStorage {
     }
 
     public static getAllParked(db: SQLiteDatabase): ParkedDb[] {
-        return db.getAllSync<{
-            id?: number,
-            carId?: number,
-            start?: string,
-            finish?: string,
-            locationId?: number,
-            note?: string,
-        }>("SELECT * FROM parked ORDER BY start DESC")
+        return db.getAllSync<ParkedRaw>("SELECT * FROM parked ORDER BY start DESC")
             .map(p => {
                 return {
                     id: p.id,
@@ -44,7 +49,7 @@ export class ParkedStorage {
             });
     }
 
-    public static async getAllParkedByIdAsync(db: SQLiteDatabase, id: number): Promise<ParkedDb | undefined> {
+    public static async getParkedByIdFullAsync(db: SQLiteDatabase, id: number): Promise<ParkedDb | undefined> {
         return ParkedStorage.getParkedByIdFull(db, id)
     }
 
@@ -55,14 +60,7 @@ export class ParkedStorage {
             return undefined;
         }
 
-        return {
-            id: parked.id,
-            start: parked.start,
-            finish: parked.finish,
-            note: parked.note,
-            location: parked.locationId?LocationStorage.getLocationById(db, parked.locationId):undefined,
-            car: parked.carId?CarStorage.getCarById(db, parked.carId):undefined
-        }
+        return ParkedStorage.mapDbToFull(parked, db)??undefined;
     }
 
 
@@ -75,14 +73,7 @@ export class ParkedStorage {
     public static getAllParkedFull(db: SQLiteDatabase): Parked[] {
         const res = ParkedStorage.getAllParked(db);
         return res.map((parked: ParkedDb) => {
-            return {
-                id: parked.id,
-                start: parked.start,
-                finish: parked.finish,
-                note: parked.note,
-                location: parked.locationId?LocationStorage.getLocationById(db, parked.locationId):undefined,
-                car: parked.carId?CarStorage.getCarById(db, parked.carId):undefined
-            }
+            return ParkedStorage.mapDbToFull(parked, db)!;
         })
     }
 
@@ -94,11 +85,14 @@ export class ParkedStorage {
         if (record.id) {
             const updateStatement = db.prepareSync(`
                 UPDATE parked
-                SET carId = $car_id, start = $start, finish = $finish,
-                    locationId = $location_id, note = $note
+                SET carId      = $car_id,
+                    start      = $start,
+                    finish     = $finish,
+                    locationId = $location_id,
+                    note       = $note
                 WHERE id = $id
             `);
-            updateStatement.executeSync<ParkedDb>({
+            updateStatement.executeSync<ParkedRaw>({
                 //@ts-ignore
                 $id: record.id,
                 $car_id: record.carId,
@@ -115,7 +109,7 @@ export class ParkedStorage {
             VALUES ($car_id, $start, $finish, $location_id, $note)
         `);
 
-        insertStatement.executeSync<ParkedDb>({
+        insertStatement.executeSync<ParkedRaw>({
             //@ts-ignore
             $car_id: record.carId,
             $start: StorageUtil.formatDateForSQLite(record.start),
@@ -127,6 +121,36 @@ export class ParkedStorage {
 
     public static deleteParkedById(db: SQLiteDatabase, id: number): void {
         const deleteStatement = db.prepareSync("DELETE FROM parked WHERE id = $id");
-        deleteStatement.executeSync({ $id: id });
+        deleteStatement.executeSync({$id: id});
+    }
+
+    private static mapRawToDb(parked: ParkedRaw | null): ParkedDb | null {
+        if (!parked) {
+            return null;
+        }
+
+        return {
+            id: parked.id,
+            start: StorageUtil.parseSQLiteDate(parked.start),
+            finish: StorageUtil.parseSQLiteDate(parked.finish),
+            note: parked.note,
+            locationId: parked.locationId,
+            carId: parked.carId,
+        }
+    }
+
+    private static mapDbToFull(parked: ParkedDb | null, db: SQLiteDatabase): Parked | null {
+        if (!parked) {
+            return null;
+        }
+
+        return {
+            id: parked.id,
+            start: parked.start,
+            finish: parked.finish,
+            note: parked.note,
+            location: parked.locationId ? LocationStorage.getLocationById(db, parked.locationId) : undefined,
+            car: parked.carId ? CarStorage.getCarById(db, parked.carId) : undefined
+        }
     }
 }

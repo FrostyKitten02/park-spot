@@ -33,14 +33,11 @@ export default function AddCarModal() {
 
     const isIOS = Platform.OS === 'ios';
 
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            title: isEditing ? 'Edit Car' : 'Add New Car',
-        });
-    }, [isEditing]);
-
     useEffect(() => {
         if (carId) {
+            navigation.setOptions({
+                title: !!carId ? 'Edit Car' : 'Add New Car',
+            });
             setIsEditing(true);
             CarStorage.getCarByIdAsync(db, parseInt(carId)).then((car) => {
                 if (car) {
@@ -53,7 +50,7 @@ export default function AddCarModal() {
                 }
             });
         }
-    }, [carId]);
+    }, [carId, db]);
 
     useEffect(() => {
         const showSubscription = Keyboard.addListener('keyboardDidShow', (e) => {

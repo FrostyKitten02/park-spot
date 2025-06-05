@@ -1,17 +1,16 @@
 import React from 'react';
-import {Modal, Pressable, StyleSheet, Text, View, Dimensions} from 'react-native';
-import MapView, {Marker, MapPressEvent, Region} from 'react-native-maps';
-import StyledTextInput from './StyledTextInput';
+import {Dimensions, Modal, Pressable, StyleSheet, View} from 'react-native';
+import MapView, {MapPressEvent, Marker} from 'react-native-maps';
 import {accentColor, primaryColor} from '@/constants/Colors';
 import {LatLng} from "react-native-maps/lib/sharedTypes";
+import {Text} from "@/components/Themed";
 
 interface LocationPickerModalProps {
     visible: boolean;
     latitude: string;
     longitude: string;
     onChange: (region: LatLng) => void;
-    onSave: () => void;
-    onCancel: () => void;
+    onExit: () => void;
 }
 
 const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
@@ -19,8 +18,7 @@ const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
                                                                      latitude,
                                                                      longitude,
                                                                      onChange,
-                                                                     onSave,
-                                                                     onCancel,
+                                                                     onExit,
                                                                  }) => {
     const lat = parseFloat(latitude) || 0;
     const lon = parseFloat(longitude) || 0;
@@ -35,7 +33,7 @@ const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
             visible={visible}
             animationType="slide"
             transparent
-            onRequestClose={onCancel}
+            onRequestClose={onExit}
         >
             <View style={styles.backdrop}>
                 <View style={styles.modalContainer}>
@@ -56,12 +54,8 @@ const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
                     </View>
 
                     <View style={styles.buttonRow}>
-                        <Pressable style={styles.cancelButton} onPress={onCancel}>
-                            <Text style={styles.cancelText}>Cancel</Text>
-                        </Pressable>
-
-                        <Pressable style={styles.saveButton} onPress={onSave}>
-                            <Text style={styles.saveText}>Save</Text>
+                        <Pressable style={styles.saveButton} onPress={onExit}>
+                            <Text style={styles.saveText}>Confirm</Text>
                         </Pressable>
                     </View>
                 </View>
@@ -76,6 +70,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
+        width: '100%',
     },
     modalContainer: {
         width: '90%',
@@ -93,24 +88,19 @@ const styles = StyleSheet.create({
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        minWidth: '100%',
         marginTop: 16,
     },
     saveButton: {
         padding: 10,
         backgroundColor: accentColor,
+        minWidth: '100%',
         borderRadius: 6,
     },
     saveText: {
         color: primaryColor,
+        textAlign: 'center',
         fontWeight: '600',
-    },
-    cancelButton: {
-        padding: 10,
-        backgroundColor: '#aaa',
-        borderRadius: 6,
-    },
-    cancelText: {
-        color: 'white',
     },
 });
 
