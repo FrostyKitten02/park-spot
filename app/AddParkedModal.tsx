@@ -24,6 +24,7 @@ import * as Location from 'expo-location';
 import DateTimePicker, {DateTimePickerAndroid} from '@react-native-community/datetimepicker';
 import {useIsFocused} from "@react-navigation/core";
 import {CarStorage} from "@/storage/CarStorage";
+import LocationPickerModal from '@/components/LocationPickerModal';
 
 
 //TODO rework ios date inputs, make component that will work on both iso and android and use ios spinner inputs
@@ -31,7 +32,7 @@ export default function AddParkedModal() {
     const db = useSQLiteContext();
     const navigation = useNavigation();
     const isFocused = useIsFocused();
-    const { parkedId } = useLocalSearchParams<{ parkedId?: string }>();
+    const {parkedId} = useLocalSearchParams<{ parkedId?: string }>();
 
     const [cars, setCars] = useState<Car[]>([]);
     const [selectedCarId, setSelectedCarId] = useState<number | undefined>();
@@ -41,6 +42,10 @@ export default function AddParkedModal() {
     const [finish, setFinish] = useState<Date | undefined>();
     const [note, setNote] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showLocationPicker, setShowLocationPicker] = useState(false);
+    const [tempLat, setTempLat] = useState('');
+    const [tempLon, setTempLon] = useState('');
+
 
     const isIos = Platform.OS === 'ios';
 
@@ -80,6 +85,7 @@ export default function AddParkedModal() {
                         if (location?.latitude && location?.longitude) {
                             setLocationString(`${location.latitude},${location.longitude}`);
                         }
+                        setLocationId(parked.locationId);
                     }
                 }
             }
@@ -89,9 +95,8 @@ export default function AddParkedModal() {
     }, [db, parkedId]);
 
 
-
     const fetchLocation = async () => {
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        const {status} = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             Alert.alert('Permission denied', 'Location permission is required.');
             return;
@@ -163,7 +168,7 @@ export default function AddParkedModal() {
         setIsLoading(true);
         try {
             const [lat, lon] = locationString.split(',');
-            const location: LocationDb = { latitude: lat, longitude: lon };
+            const location: LocationDb = {latitude: lat, longitude: lon};
 
             if (!!locationId) {
                 location.id = locationId
@@ -196,10 +201,10 @@ export default function AddParkedModal() {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1, backgroundColor: primaryColor }}
+            style={{flex: 1, backgroundColor: primaryColor}}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-            <View style={{ flex: 1 }}>
+            <View style={{flex: 1}}>
                 <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
                     <StyledPicker
                         label="Select Car"
@@ -207,8 +212,8 @@ export default function AddParkedModal() {
                         onValueChange={setSelectedCarId}
                         enabled={!isLoading}
                         options={[
-                            { label: 'Choose a car...', value: undefined },
-                            ...cars.map((car) => ({ label: car.name ?? "", value: car.id })),
+                            {label: 'Choose a car...', value: undefined},
+                            ...cars.map((car) => ({label: car.name ?? "", value: car.id})),
                         ]}
                     />
 
@@ -285,19 +290,39 @@ export default function AddParkedModal() {
                         editable={!isLoading}
                     />
 
+
                     <StyledTextInput
                         label="Location"
                         value={locationString}
                         editable={false}
+                        onPress={() => {
+                            console.log("LOCATION PICKER CLICKED!!")
+                            setShowLocationPicker(true);
+                        }}
                     />
 
+
                 </ScrollView>
+
+                <LocationPickerModal
+                    visible={showLocationPicker}
+                    latitude={locationString.split(',')[0]}
+                    longitude={locationString.split(',')[1]}
+                    onChange={(value) => {
+                        setLocationString(value.latitude + "," + value.longitude);
+                    }}
+                    onSave={() => {
+                        setLocationString(`${tempLat},${tempLon}`);
+                        setShowLocationPicker(false);
+                    }}
+                    onCancel={() => setShowLocationPicker(false)}
+                />
 
                 <View style={styles.buttonContainer}>
                     <Pressable
                         onPress={handleSubmit}
                         disabled={isLoading}
-                        style={({ pressed }) => [
+                        style={({pressed}) => [
                             {
                                 backgroundColor: pressed ? '#c0c0c0' : accentColor,
                                 opacity: isLoading ? 0.6 : 1,
@@ -306,9 +331,9 @@ export default function AddParkedModal() {
                         ]}
                     >
                         {isLoading ? (
-                            <ActivityIndicator size="small" color={primaryColor} />
+                            <ActivityIndicator size="small" color={primaryColor}/>
                         ) : (
-                            <Text style={styles.buttonText}>{!!parkedId?"Update Parking":"Add Parking"}</Text>
+                            <Text style={styles.buttonText}>{!!parkedId ? "Update Parking" : "Add Parking"}</Text>
                         )}
                     </Pressable>
                 </View>
