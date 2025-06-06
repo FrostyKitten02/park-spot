@@ -25,7 +25,7 @@ export default function MapScreen() {
             return;
         }
 
-        ParkedStorage.getAllParkedByIdAsync(db, Number(parkedId))
+        ParkedStorage.getParkedByIdFullAsync(db, Number(parkedId))
             .then(res => {
                 setParked(res);
             })

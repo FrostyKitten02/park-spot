@@ -17,12 +17,30 @@ export default function ParkingCard(props: {
 
 
     function getDateTimeStr() {
-        if (props.parked.start == undefined) {
+        const { start, finish } = props.parked;
+
+        if (!start) {
             return "";
         }
 
-        return props.parked.start.toLocaleString();
+        const startStr = start.toLocaleString();
+
+        if (!finish) {
+            return startStr;
+        }
+
+        const isSameDay =
+            start.getFullYear() === finish.getFullYear() &&
+            start.getMonth() === finish.getMonth() &&
+            start.getDate() === finish.getDate();
+
+        const finishStr = isSameDay
+            ? finish.toLocaleTimeString()
+            : finish.toLocaleString();
+
+        return `${startStr} - ${finishStr}`;
     }
+
 
     const deleteAction = !!props.onDelete && !props.viewOnly;
     return (
@@ -57,6 +75,7 @@ export default function ParkingCard(props: {
                 }
                 router.push(`/AddParkedModal?parkedId=${props.parked.id}`)
             }}
+            iconColor={props.parked.car?.color}
             marginVertical={props.marginVertical}
             title={props.parked?.car?.name??"Parking"}
             secondaryText={getDateTimeStr()}
